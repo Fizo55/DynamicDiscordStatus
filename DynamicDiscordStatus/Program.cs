@@ -50,7 +50,7 @@ namespace DynamicDiscordStatus
             using var streamReader = new StreamReader(httpResponse.GetResponseStream() ?? throw new InvalidOperationException("Got a null reference exception (not normal ..)"));
             var result = streamReader.ReadToEnd();
             var information = JsonConvert.DeserializeObject<dynamic>(result);
-            if (information.statusCode == 200) return;
+            if (information.statusCode == 200 || information.statusCode == null) return;
             Console.WriteLine("Invalid Status Code: " + information.statusCode);
         }
     }
