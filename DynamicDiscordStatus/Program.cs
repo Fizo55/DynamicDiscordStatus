@@ -17,17 +17,27 @@ namespace DynamicDiscordStatus
         {
             while (true)
             {
-                var objectToSerialize = new StatusDTO
+                if ((bool)_config.UseSpecificTimer)
                 {
-                    text = "test",
-                    emoji_id = null,
-                    emoji_name = null
-                };
+                    // TODO : json
+                    // if (DateTime.Now.Hour == 6 && DateTime.Now.Minute == 20)
+                    Thread.Sleep(60000);
+                }
+                else
+                {
+                    var objectToSerialize = new StatusDTO
+                    {
+                        text = "test",
+                        emoji_id = null,
+                        emoji_name = null
+                    };
 
-                var result = JsonConvert.SerializeObject(objectToSerialize);
-                result = "{\"custom_status\": " + result + "}";
-                //ChangeStatus(result);
-                Thread.Sleep((int)_config.TimeBetweenStatusChange);
+                    var result = JsonConvert.SerializeObject(objectToSerialize);
+                    result = "{\"custom_status\": " + result + "}";
+                    Console.WriteLine(result);
+                    //ChangeStatus(result);
+                    Thread.Sleep((int)_config.TimeBetweenStatusChange);
+                }
             }
         }
 

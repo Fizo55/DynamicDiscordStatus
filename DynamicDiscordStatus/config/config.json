@@ -1,4 +1,5 @@
 ﻿{
+  "UseSpecificTimer": false,
   "token": "",
   "TimeBetweenStatusChange": 36000000
 }
