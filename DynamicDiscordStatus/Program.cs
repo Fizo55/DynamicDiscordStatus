@@ -1,49 +1,48 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using DynamicDiscordStatus.DTO;
+using DynamicDiscordStatus.Helpers;
 using Newtonsoft.Json;
 
 namespace DynamicDiscordStatus
 {
     public class Program
     {
-        private const string STATUS_URL = "https://discordapp.com/api/v8/users/@me/settings";
-        /*
-         * To get the token press ctrl+shift+I go to console and put
-         * var req=webpackJsonp.push([[],{extra_id:(e,r,t)=>e.exports=t},[["extra_id"]]]);for(let e in req.c)if(req.c.hasOwnProperty(e)){let r=req.c[e].exports;if(r&&r.__esModule&&r.default)for(let e in r.default)"getToken"===e&&console.log(r.default.getToken())}
-         */
-        private const string TOKEN = "";
-        
+        private const string StatusUrl = "https://discordapp.com/api/v8/users/@me/settings";
+        private static readonly dynamic _config = new ConfigHelper().getConfig();
+
         public static void Main(string[] args)
         {
-            var objectToSerialize = new StatusDTO
+            while (true)
             {
-                text = "ahahahaha",
-                emoji_id = null,
-                emoji_name = null
-            };
+                var objectToSerialize = new StatusDTO
+                {
+                    text = "test",
+                    emoji_id = null,
+                    emoji_name = null
+                };
 
-            var result = JsonConvert.SerializeObject(objectToSerialize);
-            result = "{\"custom_status\": "+ result +"}";
-            Console.WriteLine(result);
-            ChangeStatus(result);
+                var result = JsonConvert.SerializeObject(objectToSerialize);
+                result = "{\"custom_status\": " + result + "}";
+                //ChangeStatus(result);
+                Thread.Sleep((int)_config.TimeBetweenStatusChange);
+            }
         }
 
         private static void ChangeStatus(string json)
         {
-            var httpRequest = (HttpWebRequest) WebRequest.Create(STATUS_URL);
+            var httpRequest = (HttpWebRequest) WebRequest.Create(StatusUrl);
             
             httpRequest.Method = "PATCH";
             httpRequest.ContentType = "application/json";
             httpRequest.Accept = "application/json";
-            httpRequest.Headers.Add("Authorization", TOKEN);
-
-            var data = json;
+            httpRequest.Headers.Add("Authorization", _config.token);
 
             using (var streamWriter = new StreamWriter(httpRequest.GetRequestStream()))
             {
-                streamWriter.Write(data);
+                streamWriter.Write(json);
             }
             
             var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
