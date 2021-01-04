@@ -19,12 +19,13 @@ namespace DynamicDiscordStatus
         {
             var objectToSerialize = new StatusDTO
             {
-                text = "NosAdventure",
-                emoji_id = "795361372107964447",
-                emoji_name = "nosadventurecom"
+                text = "ahahahaha",
+                emoji_id = null,
+                emoji_name = null
             };
 
             var result = JsonConvert.SerializeObject(objectToSerialize);
+            result = "{\"custom_status\": "+ result +"}";
             Console.WriteLine(result);
             DoRequest(result);
         }
