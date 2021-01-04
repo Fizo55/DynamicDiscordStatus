@@ -27,10 +27,10 @@ namespace DynamicDiscordStatus
             var result = JsonConvert.SerializeObject(objectToSerialize);
             result = "{\"custom_status\": "+ result +"}";
             Console.WriteLine(result);
-            DoRequest(result);
+            ChangeStatus(result);
         }
 
-        private static void DoRequest(string json)
+        private static void ChangeStatus(string json)
         {
             var httpRequest = (HttpWebRequest) WebRequest.Create(STATUS_URL);
             
