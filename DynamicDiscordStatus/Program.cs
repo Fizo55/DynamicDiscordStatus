@@ -5,6 +5,7 @@ using System.Threading;
 using DynamicDiscordStatus.DTO;
 using DynamicDiscordStatus.Helpers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DynamicDiscordStatus
 {
@@ -15,28 +16,46 @@ namespace DynamicDiscordStatus
 
         public static void Main(string[] args)
         {
+            dynamic obj = File.ReadAllText(Directory.GetParent(Environment.CurrentDirectory).Parent?.Parent?.FullName + "/config/status.json");
+            dynamic json = JArray.Parse(obj);
             while (true)
             {
                 if ((bool)_config.UseSpecificTimer)
                 {
-                    // TODO : json
-                    // if (DateTime.Now.Hour == 6 && DateTime.Now.Minute == 20)
+                    foreach (var status in json)
+                    {
+                        if (!TimeSpan.TryParse((string) status.schedule, out var timer)) continue;
+                        if (DateTime.Now.Hour != timer.Hours || DateTime.Now.Minute != timer.Minutes) continue;
+
+                        var objectToSerialize = new StatusDTO
+                        {
+                            text = (string) status.text,
+                            emoji_id = (string) status.emoji_id,
+                            emoji_name = (string) status.emoji_name
+                        };
+
+                        var result = JsonConvert.SerializeObject(objectToSerialize);
+                        result = "{\"custom_status\": " + result + "}";
+                        ChangeStatus(result);
+                    }
                     Thread.Sleep(60000);
                 }
                 else
                 {
-                    var objectToSerialize = new StatusDTO
+                    foreach (var status in json)
                     {
-                        text = "test",
-                        emoji_id = null,
-                        emoji_name = null
-                    };
+                        var objectToSerialize = new StatusDTO
+                        {
+                            text = (string) status.text,
+                            emoji_id = (string) status.emoji_id,
+                            emoji_name = (string) status.emoji_name
+                        };
 
-                    var result = JsonConvert.SerializeObject(objectToSerialize);
-                    result = "{\"custom_status\": " + result + "}";
-                    Console.WriteLine(result);
-                    //ChangeStatus(result);
-                    Thread.Sleep((int)_config.TimeBetweenStatusChange);
+                        var result = JsonConvert.SerializeObject(objectToSerialize);
+                        result = "{\"custom_status\": " + result + "}";
+                        ChangeStatus(result);
+                        Thread.Sleep((int)_config.TimeBetweenStatusChange);
+                    }
                 }
             }
         }
@@ -48,7 +67,7 @@ namespace DynamicDiscordStatus
             httpRequest.Method = "PATCH";
             httpRequest.ContentType = "application/json";
             httpRequest.Accept = "application/json";
-            httpRequest.Headers.Add("Authorization", _config.token);
+            httpRequest.Headers.Add("Authorization", (string) _config.token);
 
             using (var streamWriter = new StreamWriter(httpRequest.GetRequestStream()))
             {
