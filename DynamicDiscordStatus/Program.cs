@@ -37,8 +37,8 @@ namespace DynamicDiscordStatus
                         var result = JsonConvert.SerializeObject(objectToSerialize);
                         result = "{\"custom_status\": " + result + "}";
                         ChangeStatus(result);
+                        Thread.Sleep(60000);
                     }
-                    Thread.Sleep(60000);
                 }
                 else
                 {
