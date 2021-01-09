@@ -10,7 +10,7 @@
     "text": "coming",
     "emoji_id": null,
     "emoji_name": null,
-    "schedule": "06:30:00",
+    "schedule": "15:00:00",
     "_commentary": "Schedule can be set to null (You need to set usespecifictimer as 1 to use that in config.json)"
   },
   {

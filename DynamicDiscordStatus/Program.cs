@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -22,45 +23,41 @@ namespace DynamicDiscordStatus
             {
                 if ((bool)_config.UseSpecificTimer)
                 {
-                    foreach (var status in json)
-                    {
-                        if (!TimeSpan.TryParse((string) status.schedule, out var timer)) continue;
-                        if (DateTime.Now.Hour != timer.Hours || DateTime.Now.Minute != timer.Minutes) continue;
-
-                        var objectToSerialize = new StatusDTO
-                        {
-                            text = (string) status.text,
-                            emoji_id = (string) status.emoji_id,
-                            emoji_name = (string) status.emoji_name
-                        };
-
-                        var result = JsonConvert.SerializeObject(objectToSerialize);
-                        result = "{\"custom_status\": " + result + "}";
-                        ChangeStatus(result);
-                        Thread.Sleep(60000);
-                    }
+                    ChangeStatus(60000, true);
                 }
                 else
                 {
-                    foreach (var status in json)
-                    {
-                        var objectToSerialize = new StatusDTO
-                        {
-                            text = (string) status.text,
-                            emoji_id = (string) status.emoji_id,
-                            emoji_name = (string) status.emoji_name
-                        };
-
-                        var result = JsonConvert.SerializeObject(objectToSerialize);
-                        result = "{\"custom_status\": " + result + "}";
-                        ChangeStatus(result);
-                        Thread.Sleep((int)_config.TimeBetweenStatusChange);
-                    }
+                    ChangeStatus((int) _config.TimeBetweenStatusChange, false);
                 }
             }
         }
 
-        private static void ChangeStatus(string json)
+        [SuppressMessage("ReSharper.DPA", "DPA0002: Excessive memory allocations in SOH", MessageId = "type: TimeSpanToken[]")]
+        [SuppressMessage("ReSharper.DPA", "DPA0001: Memory allocation issues")]
+        private static void ChangeStatus(int sleepTime, bool useSpecificTimer)
+        {
+            dynamic obj = File.ReadAllText(Directory.GetParent(Environment.CurrentDirectory).Parent?.Parent?.FullName + "/config/status.json");
+            dynamic json = JArray.Parse(obj);
+            foreach (var status in json)
+            {
+                if (!TimeSpan.TryParse((string) status.schedule, out var timer) && useSpecificTimer) continue;
+                if ((DateTime.Now.Hour != timer.Hours || DateTime.Now.Minute != timer.Minutes) && useSpecificTimer) continue;
+                
+                var objectToSerialize = new StatusDTO
+                {
+                    text = (string) status.text,
+                    emoji_id = (string) status.emoji_id,
+                    emoji_name = (string) status.emoji_name
+                };
+
+                var result = JsonConvert.SerializeObject(objectToSerialize);
+                result = "{\"custom_status\": " + result + "}";
+                Request(result);
+                Thread.Sleep(sleepTime);
+            }
+        }
+
+        private static void Request(string json)
         {
             var httpRequest = (HttpWebRequest) WebRequest.Create(StatusUrl);
             
