@@ -17,8 +17,6 @@ namespace DynamicDiscordStatus
 
         public static void Main(string[] args)
         {
-            dynamic obj = File.ReadAllText(Directory.GetParent(Environment.CurrentDirectory).Parent?.Parent?.FullName + "/config/status.json");
-            dynamic json = JArray.Parse(obj);
             while (true)
             {
                 if ((bool)_config.UseSpecificTimer)
